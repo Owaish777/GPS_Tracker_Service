@@ -130,5 +130,44 @@ def get_session(session_id):
     })
 
 
+# -----------------------------
+# Get session GPS data as GeoJSON
+# -----------------------------
+@app.route("/session/<session_id>/geojson", methods=["GET"])
+def export_session_geojson(session_id):
+    if session_id not in sessions:
+        return jsonify({"error": "invalid session"}), 404
+
+    session = sessions[session_id]
+    points = list(session["gps_points"])
+
+    if len(points) == 0:
+        return jsonify({"error": "no gps data"}), 400
+
+    # Convert GPS points to GeoJSON coordinates [lon, lat]
+    coordinates = [[p["lon"], p["lat"]] for p in points]
+
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "session_id": session_id,
+                    "device_id": session["device_id"],
+                    "start_time": session["start_time"],
+                    "end_time": session["end_time"]
+                },
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": coordinates
+                }
+            }
+        ]
+    }
+
+    return jsonify(geojson)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
