@@ -38,3 +38,13 @@ def get_session(session_id):
 def export_session_geojson(session_id):
     result, status_code = services.get_session_geojson(session_id)
     return jsonify(result), status_code
+
+@session_bp.route("/sessions", methods=["GET"])
+def list_sessions():
+    result, status_code = services.get_all_sessions()
+    return jsonify(result), status_code
+
+@session_bp.route("/session/<session_id>", methods=["DELETE"])
+def delete_session(session_id):
+    result, status_code = services.delete_session(session_id)
+    return jsonify(result), status_code

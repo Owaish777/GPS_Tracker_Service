@@ -87,3 +87,27 @@ def get_session_geojson(session_id):
             "geometry": {"type": "LineString", "coordinates": coordinates}
         }]
     }, 200
+
+def get_all_sessions():
+    """Returns a summary list of all sessions."""
+    summary_list = []
+    for sid, data in sessions.items():
+        summary_list.append({
+            "session_id": sid,
+            "device_id": data["device_id"],
+            "status": data["status"],
+            "points_collected": len(data["gps_points"]),
+            "start_time": data["start_time"]
+        })
+    return summary_list, 200
+
+def delete_session(session_id):
+    """Removes a session from storage and clears active status if necessary."""
+    if session_id not in sessions:
+        return {"error": "invalid session"}, 404
+    
+    session = sessions.pop(session_id)
+    if active_sessions.get(session["device_id"]) == session_id:
+        active_sessions.pop(session["device_id"], None)
+        
+    return {"status": "deleted", "session_id": session_id}, 200
